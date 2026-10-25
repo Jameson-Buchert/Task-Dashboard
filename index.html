@@ -9,6 +9,7 @@
   </head>
   <body>
     <div class="app">
+
       <!--Sidebar-->
       <aside class="sidebar">
         <a class="brand" href="#"><span class="brand-icon">◆</span>Taskflow<span class="brand-dot">.</span></a>
@@ -33,6 +34,7 @@
         </div>
       </aside>
       <main class="main">
+
         <!--Top Bar-->
         <header class="topbar">
           <div class="crumb">Workspace <span>/</span> <strong>Overview</strong></div>
@@ -50,86 +52,110 @@
             </div>
             <button class="primary" id="addTask">New task</button>
           </div>
+
           <!--Task Statistics-->
           <section aria-label="Task statistics" class="stats">
+
             <article class="stat">
               <div class="stat-head">Total tasks <span> class="stat-icon purple">▦</span></div>
               <div class="stat-number" id="totalStat">0</div>
               <small>All your tasks in one place</small>
             </article>
+
             <article class="stat">
               <div class="stat-head">In progress <span> class="stat-icon blue">◷</span></div>
               <div class="stat-number" id="progressStat">0</div>
               <small>Keep up the momentum</small>
             </article>
+
             <article class="stat">
               <div class="stat-head">Completed <span> class="stat-icon green">✓</span></div>
               <div class="stat-number" id="completedStat">0</div>
               <small>Every win counts</small>
             </article>
+
             <article class="stat">
               <div class="stat-head">Overdue <span> class="stat-icon orange">!</span></div>
               <div class="stat-number" id="overdueStat">0</div>
               <small>Tasks needing attention</small>
             </article>
           </section>
+
           <!--Progress and Focus-->
           <section class="overview">
+
             <div class="progress-panel">
               <div class="panel-title">
                 <h2>Overall progress</h2>
                 <span>THIS WEEK & BEYOND</span>
               </div>
+
               <div class="progress-body">
                 <div>
                   <div class="big-percent" id="percent">0%</div>
                   <p>of all tasks completed</p>
                 </div>
+
                 <div class="donut" id="donut">
                   <div class="donut-inner">◆</div>
                 </div>
+
               </div>
               <div class="progress-track">
                 <div id="progressFill"></div>
               </div>
+
               <div class="progress-foot"><span>You're making progress. Keep it going!</span><strong id="progressFraction">0 / 0</strong></div>
             </div>
+
             <div class="focus-panel">
               <div class="panel-title">
+
                 <h2>Quick focus</h2>
                 <span>PRIORITIES</span>
+
               </div>
               <p>Keep your most important work front and center.</p>
               <div class="focus-list" id="focusList"></div>
+
             </div>
           </section>
+
           <!--My Tasks-->
           <section class="task-section">
+
             <div class="task-heading">
               <div>
                 <h2>My tasks <span> id="taskCount"></span></h2>
                 <p>A clear view of everything on your plate.</p>
               </div>
+
               <div class="task-tools">
+
                 <label class="search">
                   <span>⌕</span>
                   <input aria-label="Search tasks" id="search" placeholder="Search tasks..." type="search">
                 </label>
+
                 <select aria-label="Sort tasks" id="sort">
                   <option value="newest">Newest first</option>
                   <option value="due">Due date</option>
                   <option value="priority">Priority</option>
                   <option value="oldest">Oldest first</option>
                 </select>
+                
               </div>
             </div>
+            
             <div class="tabs" id="tabs">
               <button class="selected" data-status="all">All tasks</button>
               <button data-status="todo">To do</button>
               <button data-status="progress">In progress</button>
               <button data-status="done">Completed</button>
             </div>
+
             <div class="table-wrap">
+
               <table>
                 <thead>
                   <tr>
@@ -140,39 +166,50 @@
                     <th class="actions-head">Actions</th>
                   </tr>
                 </thead>
+
                 <tbody id="taskRows"></tbody>
               </table>
+
               <div class="empty" hidden="" id="empty">
                 <div>☑</div>
                 <h3>No tasks found</h3>
                 <p>Try another filter or create a new task.</p>
                 <button class="primary" id="emptyAdd">Add task</button>
               </div>
+
             </div>
             <div class="footer-note">Built with HTML, CSS & JavaScript · Data saved locally in your browser</div>
           </section>
+
         </div>
       </main>
     </div>
+
     <!--New Task Form-->
     <dialog id="taskDialog">
       <form id="taskForm">
+
         <div class="modal-head">
           <div>
             <div class="eyebrow">TASK DETAILS</div>
             <h2 id="dialogTitle">Create a new task</h2>
           </div>
+
           <button aria-label="Close" class="close" id="closeDialog" type="button">×</button>
         </div>
+
         <label>
           Task name
           <input maxlength="90" name="title" placeholder="What needs to get done?" required="">
         </label>
+
         <label>
           Description
           <textarea maxlength="300" name="description" placeholder="Add a few details (optional)" rows="3"></textarea>
         </label>
+
         <div class="form-grid">
+
           <label>
             Category
             <select name="category">
@@ -182,6 +219,7 @@
               <option>Development</option>
             </select>
           </label>
+
           <label>
             Priority
             <select name="priority">
@@ -190,10 +228,12 @@
               <option value="high">High</option>
             </select>
           </label>
+
           <label>
             Due date
             <input name="due" type="date">
           </label>
+
           <label>
             Status
             <select name="status">
@@ -201,12 +241,15 @@
               <option value="progress">In progress</option>
               <option value="done">Completed</option>
             </select>
+
           </label>
+
         </div>
         <div class="modal-actions">
           <button class="secondary" id="cancelDialog" type="button">Cancel</button>
           <button class="primary" id="saveTask" type="submit">Create task</button>
         </div>
+        
       </form>
     </dialog>
     <script src="script.js"></script>
