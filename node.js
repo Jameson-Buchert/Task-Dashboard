@@ -12,7 +12,7 @@ const path = require('node:path');
 (async () => {
   const server = http.createServer((req, res) => {
     const name = req.url === '/' ? 'index.html' : req.url.slice(1);
-    if (!['index.html', 'script.js', 'style.css'].includes(name)) {
+    if (!['index.html', 'node.js', 'style.css'].includes(name)) {
       res.writeHead(404).end(); return;
     }
     res.setHeader('Content-Type', name.endsWith('.js') ? 'text/javascript' : name.endsWith('.css') ? 'text/css' : 'text/html');
