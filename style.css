@@ -36,6 +36,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
 /* Sidebar */
 .sidebar {
+  min-width: 0;
   background: #0f172a;
   border-right: 1px solid #293b55;
   padding: 32px 18px;
@@ -469,6 +470,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .focus-item strong,.focus-item small {
   display: block;
   font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.focus-item > div {
+  min-width: 0;
 }
 
 .focus-item small {
@@ -835,7 +841,7 @@ form input::placeholder,form textarea::placeholder {
 
 @media(max-width:780px) {
   .app {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0,1fr);
   }
 
   .sidebar {

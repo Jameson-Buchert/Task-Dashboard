@@ -1,3 +1,100 @@
+// Browser: dashboard application. Node.js: regression checks.
+
+if (typeof document === 'undefined') {
+  
+// Run with Node.js and Playwright installed (uses Microsoft Edge).
+const { chromium } = require('playwright');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const http = require('node:http');
+const path = require('node:path');
+
+(async () => {
+  const server = http.createServer((req, res) => {
+    const name = req.url === '/' ? 'index.html' : req.url.slice(1);
+    if (!['index.html', 'node.js', 'style.css'].includes(name)) {
+      res.writeHead(404).end(); return;
+    }
+    res.setHeader('Content-Type', name.endsWith('.js') ? 'text/javascript' : name.endsWith('.css') ? 'text/css' : 'text/html');
+    res.end(fs.readFileSync(path.join(__dirname, name)));
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  let browser;
+  try {
+    browser = await chromium.launch({ channel: 'msedge', headless: true });
+    const page = await browser.newPage();
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const url = `http://127.0.0.1:${server.address().port}`;
+    await page.goto(url);
+    const rows = page.locator('#taskRows tr');
+    assert.equal(await rows.count(), 6);
+    assert.equal(await page.locator('#taskCount').textContent(), '6');
+    await page.click('[data-view=today]');
+    assert.equal(await rows.count(), 1);
+    await page.click('[data-view=upcoming]');
+    assert.equal(await rows.count(), 3);
+    await page.click('[data-view=all]');
+    await page.click('#addTask');
+    await page.fill('[name=title]', 'Dashboard regression task');
+    await page.fill('[name=description]', 'Persistence check');
+    await page.selectOption('[name=status]', 'progress');
+    await page.click('#saveTask');
+    assert.equal(await rows.count(), 7);
+    await page.reload();
+    assert.equal(await rows.count(), 7);
+    let row = rows.filter({ hasText: 'Dashboard regression task' });
+    await row.getByRole('button', { name: 'Edit Dashboard regression task', exact: true }).click();
+    await page.fill('[name=title]', 'Edited regression task');
+    await page.click('#saveTask');
+    row = rows.filter({ hasText: 'Edited regression task' });
+    await row.locator('input').check();
+    assert.equal(await page.locator('#completedStat').textContent(), '3');
+    await page.click('[data-status=todo]');
+    await page.fill('#search', 'no match');
+    await page.click('[data-view=completed]');
+    assert.equal(await rows.count(), 3);
+    assert.equal(await page.locator('.crumb strong').textContent(), 'Completed');
+    await page.click('[data-view=all]');
+    await page.fill('#search', 'Persistence check');
+    assert.equal(await rows.count(), 1);
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: 'Delete Edited regression task', exact: true }).click();
+    assert.equal(await rows.count(), 0);
+    assert.equal(await page.locator('#empty').isVisible(), true);
+    await page.click('[data-view=all]');
+    await page.selectOption('#sort', 'priority');
+    assert.equal(await rows.first().locator('td').nth(1).textContent(), 'high');
+    await page.getByRole('button', { name: 'Design', exact: true }).click();
+    assert.equal(await rows.count(), 2);
+    await page.reload();
+    assert.equal(await rows.count(), 6);
+    await page.evaluate(() => localStorage.setItem('taskflow.tasks.v1', '[null]'));
+    await page.reload();
+    assert.equal(await rows.count(), 6);
+    assert.match(await page.locator('#storageMessage').textContent(), /could not be loaded/);
+    await page.evaluate(() => localStorage.setItem('taskflow.tasks.v1', '[]'));
+    await page.reload();
+    assert.equal(await rows.count(), 0);
+    assert.equal(await page.locator('#percent').textContent(), '0%');
+    await page.evaluate(() => { Storage.prototype.setItem = () => { throw new Error('Storage unavailable'); }; });
+    await page.click('#emptyAdd');
+    await page.fill('[name=title]', 'Unsaved task');
+    await page.click('#saveTask');
+    assert.match(await page.locator('#storageMessage').textContent(), /only available in this tab/);
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    assert.deepEqual(errors, []);
+    console.log('PASS: rendering, CRUD, persistence, navigation, search, sorting, categories, empty state, invalid storage, failed saves, mobile width, and no JavaScript errors.');
+  } finally {
+    if (browser) await browser.close();
+    await new Promise(resolve => server.close(resolve));
+  }
+})().catch(error => { console.error(error); process.exitCode = 1; });
+
+} else {
+
+
 /* Task Storage */
 
 const STORAGE_KEY = "taskflow.tasks.v1";
@@ -40,22 +137,39 @@ function loadTasks() {
     if (savedTasks !== null) {
       const parsedTasks = JSON.parse(savedTasks);
 
-      if (Array.isArray(parsedTasks)) {
+      if (Array.isArray(parsedTasks) && parsedTasks.every(isValidTask) &&
+          new Set(parsedTasks.map((task) => task.id)).size === parsedTasks.length) {
         return parsedTasks;
       }
+      throw new Error("Saved task data has an invalid format.");
     }
   } catch (error) {
     console.warn("Unable to load saved tasks:", error);
+    select("#storageMessage").textContent = "Saved tasks could not be loaded. Sample tasks are shown; browser data has not been changed.";
   }
 
   return sampleTasks.map((task) => ({ ...task }));
 }
 
+function isValidTask(task) {
+  return task && typeof task === "object" && typeof task.id === "string" && task.id &&
+    typeof task.title === "string" && task.title.trim() &&
+    (task.description === undefined || typeof task.description === "string") &&
+    ["Work", "Personal", "Design", "Development"].includes(task.category) &&
+    ["high", "medium", "low"].includes(task.priority) &&
+    ["todo", "progress", "done"].includes(task.status) &&
+    (task.due === "" || (typeof task.due === "string" && /^\d{4}-\d{2}-\d{2}$/.test(task.due) &&
+      Number.isFinite(new Date(task.due + "T12:00:00").getTime()))) &&
+    (task.created === undefined || Number.isFinite(task.created));
+}
+
 function saveTasks() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    select("#storageMessage").textContent = "Data saved locally in your browser";
   } catch (error) {
     console.warn("Unable to save tasks:", error);
+    select("#storageMessage").textContent = "Changes are only available in this tab. Browser storage is unavailable; keep this tab open to retain your work.";
   }
 }
 
@@ -149,6 +263,7 @@ function updateCategories() {
     button.addEventListener("click", () => {
       categoryFilter = categoryFilter === category ? "all" : category;
       currentView = "all";
+      statusFilter = "all";
       updateNavigation();
       render();
     });
@@ -158,8 +273,13 @@ function updateCategories() {
 }
 
 function updateNavigation() {
+  const viewNames = { all: "Overview", today: "Due today", upcoming: "Upcoming", completed: "Completed" };
+  select(".crumb strong").textContent = categoryFilter === "all" ? viewNames[currentView] : categoryFilter;
   document.querySelectorAll(".nav").forEach((button) => {
-    button.classList.toggle("active", button.dataset.view === currentView);
+    button.classList.toggle("active", categoryFilter === "all" && button.dataset.view === currentView);
+  });
+  document.querySelectorAll("#tabs button").forEach((button) => {
+    button.classList.toggle("selected", button.dataset.status === statusFilter);
   });
 }
 
@@ -267,6 +387,7 @@ function makeTaskRow(task) {
 }
 
 function render() {
+  updateNavigation();
   updateStatistics();
   updateFocus();
   updateCategories();
@@ -310,7 +431,7 @@ select("#taskForm").addEventListener("submit", function (event) {
   } else {
     tasks.unshift({
       ...data,
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      id: globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       created: Date.now()
     });
   }
@@ -333,6 +454,8 @@ document.querySelectorAll(".nav").forEach((button) => {
   button.addEventListener("click", () => {
     currentView = button.dataset.view;
     categoryFilter = "all";
+    statusFilter = "all";
+    select("#search").value = "";
     updateNavigation();
     render();
   });
@@ -360,3 +483,5 @@ select("#todayLabel").textContent = new Date().toLocaleDateString("en-US", {
 });
 
 render();
+
+}

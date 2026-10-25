@@ -4,9 +4,11 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <meta content="#0f172a" name="theme-color">
-    <title>Taskflow | Task Management Dashboard</title>
+    <title>Taskflow | Task Management Dashboard</title>  
     <link href="style.css" rel="stylesheet">
+  
   </head>
+
   <body>
     <div class="app">
 
@@ -57,25 +59,25 @@
           <section aria-label="Task statistics" class="stats">
 
             <article class="stat">
-              <div class="stat-head">Total tasks <span> class="stat-icon purple">▦</span></div>
+              <div class="stat-head">Total tasks <span class="stat-icon purple">▦</span></div>
               <div class="stat-number" id="totalStat">0</div>
               <small>All your tasks in one place</small>
             </article>
 
             <article class="stat">
-              <div class="stat-head">In progress <span> class="stat-icon blue">◷</span></div>
+              <div class="stat-head">In progress <span class="stat-icon blue">◷</span></div>
               <div class="stat-number" id="progressStat">0</div>
               <small>Keep up the momentum</small>
             </article>
 
             <article class="stat">
-              <div class="stat-head">Completed <span> class="stat-icon green">✓</span></div>
+              <div class="stat-head">Completed <span class="stat-icon green">✓</span></div>
               <div class="stat-number" id="completedStat">0</div>
               <small>Every win counts</small>
             </article>
 
             <article class="stat">
-              <div class="stat-head">Overdue <span> class="stat-icon orange">!</span></div>
+              <div class="stat-head">Overdue <span class="stat-icon orange">!</span></div>
               <div class="stat-number" id="overdueStat">0</div>
               <small>Tasks needing attention</small>
             </article>
@@ -126,7 +128,7 @@
 
             <div class="task-heading">
               <div>
-                <h2>My tasks <span> id="taskCount"></span></h2>
+                <h2>My tasks <span id="taskCount" aria-live="polite"></span></h2>
                 <p>A clear view of everything on your plate.</p>
               </div>
 
@@ -178,7 +180,7 @@
               </div>
 
             </div>
-            <div class="footer-note">Built with HTML, CSS & JavaScript · Data saved locally in your browser</div>
+            <div class="footer-note" id="storageMessage" role="status">Data saved locally in your browser</div>
           </section>
 
         </div>
@@ -252,6 +254,6 @@
         
       </form>
     </dialog>
-    <script src="script.js"></script>
+    <script src="node.js"></script>
   </body>
 </html>
