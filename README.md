@@ -1,17 +1,7 @@
 # Task-Dashboard
-
 Open index.html in a modern browser to use Taskflow. Create, edit, complete,
 and delete tasks; filter by date, category, or status; search and sort the list.
 The dashboard starts with six example tasks. Changes are saved in that browser's
 local storage. Use the same browser and URL to return to your saved tasks.
 Storage errors appear below the task list.
 
-## Regression checks
-
-With Node.js, Playwright, and Microsoft Edge installed, run:
-
-    node script.js
-
-The test serves the app on a temporary local port and uses an isolated browser
-session. It covers task CRUD, saved data after reload, filters, search, sorting,
-statistics, empty states, storage failures, and mobile page width.
